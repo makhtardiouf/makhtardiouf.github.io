@@ -6,13 +6,11 @@ import {RouterModule} from '@angular/router';
   templateUrl: "../main.html",
 })
 
-RouterModule.forRoot([
-  {
-    path: 'projects',
-    component: ProjectsComponent,
-  }
-])
+RouterModule.forRoot([{
+  path: 'projects',
+  component: ProjectsComponent,
+}])
 
-export class AppComponent {
+    export class AppComponent {
   name = 'Angular';
 }
