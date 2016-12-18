@@ -36,4 +36,7 @@ import { Scheduler } from '../Scheduler';
  * @method sampleTime
  * @owner Observable
  */
-export declare function sampleTime<T>(this: Observable<T>, period: number, scheduler?: Scheduler): Observable<T>;
+export declare function sampleTime<T>(period: number, scheduler?: Scheduler): Observable<T>;
+export interface SampleTimeSignature<T> {
+    (period: number, scheduler?: Scheduler): Observable<T>;
+}

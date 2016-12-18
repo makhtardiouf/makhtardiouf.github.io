@@ -32,4 +32,7 @@ import { Observable } from '../Observable';
  * @method takeUntil
  * @owner Observable
  */
-export declare function takeUntil<T>(this: Observable<T>, notifier: Observable<any>): Observable<T>;
+export declare function takeUntil<T>(notifier: Observable<any>): Observable<T>;
+export interface TakeUntilSignature<T> {
+    (notifier: Observable<any>): Observable<T>;
+}

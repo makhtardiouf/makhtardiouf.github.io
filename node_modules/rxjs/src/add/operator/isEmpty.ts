@@ -1,11 +1,11 @@
 
 import { Observable } from '../../Observable';
-import { isEmpty } from '../../operator/isEmpty';
+import { isEmpty, IsEmptySignature } from '../../operator/isEmpty';
 
 Observable.prototype.isEmpty = isEmpty;
 
 declare module '../../Observable' {
   interface Observable<T> {
-    isEmpty: typeof isEmpty;
+    isEmpty: IsEmptySignature<T>;
   }
 }

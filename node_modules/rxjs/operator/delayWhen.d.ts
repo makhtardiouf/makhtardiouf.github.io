@@ -44,4 +44,7 @@ import { Observable } from '../Observable';
  * @method delayWhen
  * @owner Observable
  */
-export declare function delayWhen<T>(this: Observable<T>, delayDurationSelector: (value: T) => Observable<any>, subscriptionDelay?: Observable<any>): Observable<T>;
+export declare function delayWhen<T>(delayDurationSelector: (value: T) => Observable<any>, subscriptionDelay?: Observable<any>): Observable<T>;
+export interface DelayWhenSignature<T> {
+    (delayDurationSelector: (value: T) => Observable<any>, subscriptionDelay?: Observable<any>): Observable<T>;
+}

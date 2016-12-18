@@ -36,4 +36,7 @@ import { Observable } from '../Observable';
  * @method elementAt
  * @owner Observable
  */
-export declare function elementAt<T>(this: Observable<T>, index: number, defaultValue?: T): Observable<T>;
+export declare function elementAt<T>(index: number, defaultValue?: T): Observable<T>;
+export interface ElementAtSignature<T> {
+    (index: number, defaultValue?: T): Observable<T>;
+}

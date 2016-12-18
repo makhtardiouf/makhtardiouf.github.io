@@ -6,13 +6,6 @@ import { Subject } from '../Subject';
 import { Map } from '../util/Map';
 import { FastMap } from '../util/FastMap';
 
-/* tslint:disable:max-line-length */
-export function groupBy<T, K>(this: Observable<T>, keySelector: (value: T) => K): Observable<GroupedObservable<K, T>>;
-export function groupBy<T, K>(this: Observable<T>, keySelector: (value: T) => K, elementSelector: void, durationSelector: (grouped: GroupedObservable<K, T>) => Observable<any>): Observable<GroupedObservable<K, T>>;
-export function groupBy<T, K, R>(this: Observable<T>, keySelector: (value: T) => K, elementSelector?: (value: T) => R, durationSelector?: (grouped: GroupedObservable<K, R>) => Observable<any>): Observable<GroupedObservable<K, R>>;
-export function groupBy<T, K, R>(this: Observable<T>, keySelector: (value: T) => K, elementSelector?: (value: T) => R, durationSelector?: (grouped: GroupedObservable<K, R>) => Observable<any>, subjectSelector?: () => Subject<R>): Observable<GroupedObservable<K, R>>;
-/* tslint:disable:max-line-length */
-
 /**
  * Groups the items emitted by an Observable according to a specified criterion,
  * and emits these grouped items as `GroupedObservables`, one
@@ -34,12 +27,19 @@ export function groupBy<T, K, R>(this: Observable<T>, keySelector: (value: T) =>
  * @method groupBy
  * @owner Observable
  */
-export function groupBy<T, K, R>(this: Observable<T>, keySelector: (value: T) => K,
-                                 elementSelector?: ((value: T) => R) | void,
-                                 durationSelector?: (grouped: GroupedObservable<K, R>) => Observable<any>,
-                                 subjectSelector?: () => Subject<R>): Observable<GroupedObservable<K, R>> {
-  return this.lift(new GroupByOperator(keySelector, elementSelector, durationSelector, subjectSelector));
+export function groupBy<T, K, R>(keySelector: (value: T) => K,
+                                 elementSelector?: (value: T) => R,
+                                 durationSelector?: (grouped: GroupedObservable<K, R>) => Observable<any>): Observable<GroupedObservable<K, R>> {
+  return this.lift(new GroupByOperator(this, keySelector, elementSelector, durationSelector));
 }
+
+/* tslint:disable:max-line-length */
+export interface GroupBySignature<T> {
+  <K>(keySelector: (value: T) => K): Observable<GroupedObservable<K, T>>;
+  <K>(keySelector: (value: T) => K, elementSelector: void, durationSelector: (grouped: GroupedObservable<K, T>) => Observable<any>): Observable<GroupedObservable<K, T>>;
+  <K, R>(keySelector: (value: T) => K, elementSelector?: (value: T) => R, durationSelector?: (grouped: GroupedObservable<K, R>) => Observable<any>): Observable<GroupedObservable<K, R>>;
+}
+/* tslint:enable:max-line-length */
 
 export interface RefCountSubscription {
   count: number;
@@ -49,15 +49,15 @@ export interface RefCountSubscription {
 }
 
 class GroupByOperator<T, K, R> implements Operator<T, GroupedObservable<K, R>> {
-  constructor(private keySelector: (value: T) => K,
-              private elementSelector?: ((value: T) => R) | void,
-              private durationSelector?: (grouped: GroupedObservable<K, R>) => Observable<any>,
-              private subjectSelector?: () => Subject<R>) {
+  constructor(public source: Observable<T>,
+              private keySelector: (value: T) => K,
+              private elementSelector?: (value: T) => R,
+              private durationSelector?: (grouped: GroupedObservable<K, R>) => Observable<any>) {
   }
 
   call(subscriber: Subscriber<GroupedObservable<K, R>>, source: any): any {
     return source._subscribe(new GroupBySubscriber(
-      subscriber, this.keySelector, this.elementSelector, this.durationSelector, this.subjectSelector
+      subscriber, this.keySelector, this.elementSelector, this.durationSelector
     ));
   }
 }
@@ -74,9 +74,8 @@ class GroupBySubscriber<T, K, R> extends Subscriber<T> implements RefCountSubscr
 
   constructor(destination: Subscriber<GroupedObservable<K, R>>,
               private keySelector: (value: T) => K,
-              private elementSelector?: ((value: T) => R) | void,
-              private durationSelector?: (grouped: GroupedObservable<K, R>) => Observable<any>,
-              private subjectSelector?: () => Subject<R>) {
+              private elementSelector?: (value: T) => R,
+              private durationSelector?: (grouped: GroupedObservable<K, R>) => Observable<any>) {
     super(destination);
   }
 
@@ -113,8 +112,7 @@ class GroupBySubscriber<T, K, R> extends Subscriber<T> implements RefCountSubscr
     }
 
     if (!group) {
-      group = this.subjectSelector ? this.subjectSelector() : new Subject<R>();
-      groups.set(key, group);
+      groups.set(key, group = new Subject<R>());
       const groupedObservable = new GroupedObservable(key, group, this);
       this.destination.next(groupedObservable);
       if (this.durationSelector) {

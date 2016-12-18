@@ -34,4 +34,7 @@ import { Observable } from '../Observable';
  * @method dematerialize
  * @owner Observable
  */
-export declare function dematerialize<T>(this: Observable<T>): Observable<any>;
+export declare function dematerialize<T>(): Observable<any>;
+export interface DematerializeSignature<T> {
+    <R>(): Observable<R>;
+}

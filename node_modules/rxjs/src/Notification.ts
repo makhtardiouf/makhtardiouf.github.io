@@ -18,7 +18,7 @@ import { Observable } from './Observable';
 export class Notification<T> {
   hasValue: boolean;
 
-  constructor(public kind: string, public value?: T, public error?: any) {
+  constructor(public kind: string, public value?: T, public exception?: any) {
     this.hasValue = kind === 'N';
   }
 
@@ -32,7 +32,7 @@ export class Notification<T> {
       case 'N':
         return observer.next && observer.next(this.value);
       case 'E':
-        return observer.error && observer.error(this.error);
+        return observer.error && observer.error(this.exception);
       case 'C':
         return observer.complete && observer.complete();
     }
@@ -52,7 +52,7 @@ export class Notification<T> {
       case 'N':
         return next && next(this.value);
       case 'E':
-        return error && error(this.error);
+        return error && error(this.exception);
       case 'C':
         return complete && complete();
     }
@@ -86,7 +86,7 @@ export class Notification<T> {
       case 'N':
         return Observable.of(this.value);
       case 'E':
-        return Observable.throw(this.error);
+        return Observable.throw(this.exception);
       case 'C':
         return Observable.empty<T>();
     }
@@ -113,7 +113,7 @@ export class Notification<T> {
   /**
    * A shortcut to create a Notification instance of the type `error` from a
    * given error.
-   * @param {any} [err] The `error` error.
+   * @param {any} [err] The `error` exception.
    * @return {Notification<T>} The "error" Notification representing the
    * argument.
    */

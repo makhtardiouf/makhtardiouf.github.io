@@ -56,10 +56,14 @@ import { Subscription } from '../Subscription';
  * @method windowTime
  * @owner Observable
  */
-export function windowTime<T>(this: Observable<T>, windowTimeSpan: number,
+export function windowTime<T>(windowTimeSpan: number,
                               windowCreationInterval: number = null,
                               scheduler: Scheduler = async): Observable<Observable<T>> {
   return this.lift(new WindowTimeOperator<T>(windowTimeSpan, windowCreationInterval, scheduler));
+}
+
+export interface WindowTimeSignature<T> {
+  (windowTimeSpan: number, windowCreationInterval?: number, scheduler?: Scheduler): Observable<Observable<T>>;
 }
 
 class WindowTimeOperator<T> implements Operator<T, Observable<T>> {
@@ -160,13 +164,13 @@ interface TimeSpanOnlyState<T> {
   subscriber: WindowTimeSubscriber<T>;
 }
 
-function dispatchWindowTimeSpanOnly<T>(this: Action<TimeSpanOnlyState<T>>, state: TimeSpanOnlyState<T>) {
+function dispatchWindowTimeSpanOnly<T>(state: TimeSpanOnlyState<T>) {
   const { subscriber, windowTimeSpan, window } = state;
   if (window) {
     window.complete();
   }
   state.window = subscriber.openWindow();
-  this.schedule(state, windowTimeSpan);
+  (<any>this).schedule(state, windowTimeSpan);
 }
 
 interface Context<T> {
@@ -180,10 +184,10 @@ interface DispatchArg<T> {
   context: Context<T>;
 }
 
-function dispatchWindowCreation<T>(this: Action<CreationState<T>>, state: CreationState<T>) {
+function dispatchWindowCreation<T>(state: CreationState<T>) {
   let { windowTimeSpan, subscriber, scheduler, windowCreationInterval } = state;
   let window = subscriber.openWindow();
-  let action = this;
+  let action = <Action<CreationState<T>>>this;
   let context: Context<T> = { action, subscription: <any>null };
   const timeSpanState: DispatchArg<T> = { subscriber, window, context };
   context.subscription = scheduler.schedule(dispatchWindowClose, windowTimeSpan, timeSpanState);

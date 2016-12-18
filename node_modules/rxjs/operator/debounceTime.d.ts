@@ -46,4 +46,7 @@ import { Scheduler } from '../Scheduler';
  * @method debounceTime
  * @owner Observable
  */
-export declare function debounceTime<T>(this: Observable<T>, dueTime: number, scheduler?: Scheduler): Observable<T>;
+export declare function debounceTime<T>(dueTime: number, scheduler?: Scheduler): Observable<T>;
+export interface DebounceTimeSignature<T> {
+    (dueTime: number, scheduler?: Scheduler): Observable<T>;
+}

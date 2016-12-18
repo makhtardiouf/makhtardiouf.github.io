@@ -2,7 +2,6 @@ import { Observable } from '../Observable';
 import { Operator } from '../Operator';
 import { Subscriber } from '../Subscriber';
 import { Scheduler } from '../Scheduler';
-import { Action } from '../scheduler/Action';
 import { async } from '../scheduler/async';
 import { TeardownLogic } from '../Subscription';
 
@@ -42,8 +41,12 @@ import { TeardownLogic } from '../Subscription';
  * @method sampleTime
  * @owner Observable
  */
-export function sampleTime<T>(this: Observable<T>, period: number, scheduler: Scheduler = async): Observable<T> {
+export function sampleTime<T>(period: number, scheduler: Scheduler = async): Observable<T> {
   return this.lift(new SampleTimeOperator(period, scheduler));
+}
+
+export interface SampleTimeSignature<T> {
+  (period: number, scheduler?: Scheduler): Observable<T>;
 }
 
 class SampleTimeOperator<T> implements Operator<T, T> {
@@ -85,8 +88,8 @@ class SampleTimeSubscriber<T> extends Subscriber<T> {
   }
 }
 
-function dispatchNotification<T>(this: Action<any>, state: any) {
+function dispatchNotification<T>(state: any) {
   let { subscriber, period } = state;
   subscriber.notifyNext();
-  this.schedule(state, period);
+  (<any>this).schedule(state, period);
 }

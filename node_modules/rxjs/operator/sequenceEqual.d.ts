@@ -2,6 +2,9 @@ import { Operator } from '../Operator';
 import { Observer } from '../Observer';
 import { Observable } from '../Observable';
 import { Subscriber } from '../Subscriber';
+export interface SequenceEqualSignature<T> {
+    (compareTo: Observable<T>, comparor?: (a: T, b: T) => boolean): Observable<boolean>;
+}
 /**
  * Compares all values of two observables in sequence using an optional comparor function
  * and returns an observable of a single boolean value representing whether or not the two sequences
@@ -54,12 +57,12 @@ import { Subscriber } from '../Subscriber';
  * @method sequenceEqual
  * @owner Observable
  */
-export declare function sequenceEqual<T>(this: Observable<T>, compareTo: Observable<T>, comparor?: (a: T, b: T) => boolean): Observable<boolean>;
-export declare class SequenceEqualOperator<T> implements Operator<T, boolean> {
+export declare function sequenceEqual<T>(compareTo: Observable<T>, comparor?: (a: T, b: T) => boolean): Observable<boolean>;
+export declare class SequenceEqualOperator<T> implements Operator<T, T> {
     private compareTo;
     private comparor;
     constructor(compareTo: Observable<T>, comparor: (a: T, b: T) => boolean);
-    call(subscriber: Subscriber<boolean>, source: any): any;
+    call(subscriber: Subscriber<T>, source: any): any;
 }
 /**
  * We need this JSDoc comment for affecting ESDoc.

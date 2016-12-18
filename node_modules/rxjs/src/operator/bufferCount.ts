@@ -43,8 +43,12 @@ import { Observable } from '../Observable';
  * @method bufferCount
  * @owner Observable
  */
-export function bufferCount<T>(this: Observable<T>, bufferSize: number, startBufferEvery: number = null): Observable<T[]> {
+export function bufferCount<T>(bufferSize: number, startBufferEvery: number = null): Observable<T[]> {
   return this.lift(new BufferCountOperator<T>(bufferSize, startBufferEvery));
+}
+
+export interface BufferCountSignature<T> {
+  (bufferSize: number, startBufferEvery?: number): Observable<T[]>;
 }
 
 class BufferCountOperator<T> implements Operator<T, T[]> {
@@ -62,7 +66,7 @@ class BufferCountOperator<T> implements Operator<T, T[]> {
  * @extends {Ignored}
  */
 class BufferCountSubscriber<T> extends Subscriber<T> {
-  private buffers: Array<T[]> = [];
+  private buffers: Array<T[]> = [[]];
   private count: number = 0;
 
   constructor(destination: Subscriber<T[]>, private bufferSize: number, private startBufferEvery: number) {
@@ -70,21 +74,29 @@ class BufferCountSubscriber<T> extends Subscriber<T> {
   }
 
   protected _next(value: T) {
-    const count = this.count++;
-    const { destination, bufferSize, startBufferEvery, buffers } = this;
-    const startOn = (startBufferEvery == null) ? bufferSize : startBufferEvery;
+    const count = (this.count += 1);
+    const destination = this.destination;
+    const bufferSize = this.bufferSize;
+    const startBufferEvery = (this.startBufferEvery == null) ? bufferSize : this.startBufferEvery;
+    const buffers = this.buffers;
+    const len = buffers.length;
+    let remove = -1;
 
-    if (count % startOn === 0) {
+    if (count % startBufferEvery === 0) {
       buffers.push([]);
     }
 
-    for (let i = buffers.length; i--; ) {
+    for (let i = 0; i < len; i++) {
       const buffer = buffers[i];
       buffer.push(value);
       if (buffer.length === bufferSize) {
-        buffers.splice(i, 1);
+        remove = i;
         destination.next(buffer);
       }
+    }
+
+    if (remove !== -1) {
+      buffers.splice(remove, 1);
     }
   }
 

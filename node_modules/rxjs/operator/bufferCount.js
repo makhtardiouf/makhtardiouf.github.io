@@ -72,23 +72,30 @@ var BufferCountSubscriber = (function (_super) {
         _super.call(this, destination);
         this.bufferSize = bufferSize;
         this.startBufferEvery = startBufferEvery;
-        this.buffers = [];
+        this.buffers = [[]];
         this.count = 0;
     }
     BufferCountSubscriber.prototype._next = function (value) {
-        var count = this.count++;
-        var _a = this, destination = _a.destination, bufferSize = _a.bufferSize, startBufferEvery = _a.startBufferEvery, buffers = _a.buffers;
-        var startOn = (startBufferEvery == null) ? bufferSize : startBufferEvery;
-        if (count % startOn === 0) {
+        var count = (this.count += 1);
+        var destination = this.destination;
+        var bufferSize = this.bufferSize;
+        var startBufferEvery = (this.startBufferEvery == null) ? bufferSize : this.startBufferEvery;
+        var buffers = this.buffers;
+        var len = buffers.length;
+        var remove = -1;
+        if (count % startBufferEvery === 0) {
             buffers.push([]);
         }
-        for (var i = buffers.length; i--;) {
+        for (var i = 0; i < len; i++) {
             var buffer = buffers[i];
             buffer.push(value);
             if (buffer.length === bufferSize) {
-                buffers.splice(i, 1);
+                remove = i;
                 destination.next(buffer);
             }
+        }
+        if (remove !== -1) {
+            buffers.splice(remove, 1);
         }
     };
     BufferCountSubscriber.prototype._complete = function () {

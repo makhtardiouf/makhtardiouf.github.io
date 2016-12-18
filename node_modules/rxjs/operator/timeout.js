@@ -7,7 +7,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 var async_1 = require('../scheduler/async');
 var isDate_1 = require('../util/isDate');
 var Subscriber_1 = require('../Subscriber');
-var TimeoutError_1 = require('../util/TimeoutError');
 /**
  * @param due
  * @param errorToSend
@@ -21,8 +20,7 @@ function timeout(due, errorToSend, scheduler) {
     if (scheduler === void 0) { scheduler = async_1.async; }
     var absoluteTimeout = isDate_1.isDate(due);
     var waitFor = absoluteTimeout ? (+due - scheduler.now()) : Math.abs(due);
-    var error = errorToSend || new TimeoutError_1.TimeoutError();
-    return this.lift(new TimeoutOperator(waitFor, absoluteTimeout, error, scheduler));
+    return this.lift(new TimeoutOperator(waitFor, absoluteTimeout, errorToSend, scheduler));
 }
 exports.timeout = timeout;
 var TimeoutOperator = (function () {
@@ -97,7 +95,7 @@ var TimeoutSubscriber = (function (_super) {
         this._hasCompleted = true;
     };
     TimeoutSubscriber.prototype.notifyTimeout = function () {
-        this.error(this.errorToSend);
+        this.error(this.errorToSend || new Error('timeout'));
     };
     return TimeoutSubscriber;
 }(Subscriber_1.Subscriber));

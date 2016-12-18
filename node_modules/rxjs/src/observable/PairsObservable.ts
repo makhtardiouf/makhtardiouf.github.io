@@ -1,5 +1,4 @@
 import { Scheduler } from '../Scheduler';
-import { Action } from '../scheduler/Action';
 import { Observable } from '../Observable';
 import { Subscriber } from '../Subscriber';
 import { TeardownLogic } from '../Subscription';
@@ -12,7 +11,7 @@ interface PairsContext<T> {
   subscriber: Subscriber<Array<string | T>>;
 }
 
-function dispatch<T>(this: Action<PairsContext<T>>, state: PairsContext<T>) {
+function dispatch<T>(state: PairsContext<T>) {
   const {obj, keys, length, index, subscriber} = state;
 
   if (index === length) {
@@ -25,7 +24,7 @@ function dispatch<T>(this: Action<PairsContext<T>>, state: PairsContext<T>) {
 
   state.index = index + 1;
 
-  this.schedule(state);
+  (<any> this).schedule(state);
 }
 
 /**

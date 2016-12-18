@@ -10,7 +10,6 @@ var Subscriber_1 = require('../Subscriber');
 var OuterSubscriber_1 = require('../OuterSubscriber');
 var subscribeToResult_1 = require('../util/subscribeToResult');
 var iterator_1 = require('../symbol/iterator');
-/* tslint:disable:max-line-length */
 /**
  * @param observables
  * @return {Observable<R>}
@@ -22,7 +21,8 @@ function zipProto() {
     for (var _i = 0; _i < arguments.length; _i++) {
         observables[_i - 0] = arguments[_i];
     }
-    return this.lift.call(zipStatic.apply(void 0, [this].concat(observables)));
+    observables.unshift(this);
+    return zipStatic.apply(this, observables);
 }
 exports.zipProto = zipProto;
 /* tslint:enable:max-line-length */
@@ -65,6 +65,7 @@ var ZipSubscriber = (function (_super) {
     function ZipSubscriber(destination, project, values) {
         if (values === void 0) { values = Object.create(null); }
         _super.call(this, destination);
+        this.index = 0;
         this.iterators = [];
         this.active = 0;
         this.project = (typeof project === 'function') ? project : null;
@@ -72,6 +73,7 @@ var ZipSubscriber = (function (_super) {
     }
     ZipSubscriber.prototype._next = function (value) {
         var iterators = this.iterators;
+        var index = this.index++;
         if (isArray_1.isArray(value)) {
             iterators.push(new StaticArrayIterator(value));
         }
@@ -79,7 +81,7 @@ var ZipSubscriber = (function (_super) {
             iterators.push(new StaticIterator(value[iterator_1.$$iterator]()));
         }
         else {
-            iterators.push(new ZipBufferIterator(this.destination, this, value));
+            iterators.push(new ZipBufferIterator(this.destination, this, value, index));
         }
     };
     ZipSubscriber.prototype._complete = function () {
@@ -202,10 +204,11 @@ var StaticArrayIterator = (function () {
  */
 var ZipBufferIterator = (function (_super) {
     __extends(ZipBufferIterator, _super);
-    function ZipBufferIterator(destination, parent, observable) {
+    function ZipBufferIterator(destination, parent, observable, index) {
         _super.call(this, destination);
         this.parent = parent;
         this.observable = observable;
+        this.index = index;
         this.stillUnsubscribed = true;
         this.buffer = [];
         this.isComplete = false;

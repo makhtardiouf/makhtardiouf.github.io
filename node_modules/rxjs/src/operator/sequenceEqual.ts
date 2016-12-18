@@ -5,6 +5,10 @@ import { Subscriber } from '../Subscriber';
 import { tryCatch } from '../util/tryCatch';
 import { errorObject } from '../util/errorObject';
 
+export interface SequenceEqualSignature<T> {
+  (compareTo: Observable<T>, comparor?: (a: T, b: T) => boolean): Observable<boolean>;
+}
+
 /**
  * Compares all values of two observables in sequence using an optional comparor function
  * and returns an observable of a single boolean value representing whether or not the two sequences
@@ -57,17 +61,17 @@ import { errorObject } from '../util/errorObject';
  * @method sequenceEqual
  * @owner Observable
  */
-export function sequenceEqual<T>(this: Observable<T>, compareTo: Observable<T>,
+export function sequenceEqual<T>(compareTo: Observable<T>,
                                  comparor?: (a: T, b: T) => boolean): Observable<boolean> {
   return this.lift(new SequenceEqualOperator(compareTo, comparor));
 }
 
-export class SequenceEqualOperator<T> implements Operator<T, boolean> {
+export class SequenceEqualOperator<T> implements Operator<T, T> {
   constructor(private compareTo: Observable<T>,
               private comparor: (a: T, b: T) => boolean) {
   }
 
-  call(subscriber: Subscriber<boolean>, source: any): any {
+  call(subscriber: Subscriber<T>, source: any): any {
     return source._subscribe(new SequenceEqualSubscriber(subscriber, this.compareTo, this.comparor));
   }
 }

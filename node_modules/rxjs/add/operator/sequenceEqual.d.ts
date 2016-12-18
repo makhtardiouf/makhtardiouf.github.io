@@ -1,6 +1,6 @@
-import { sequenceEqual } from '../../operator/sequenceEqual';
+import { SequenceEqualSignature } from '../../operator/sequenceEqual';
 declare module '../../Observable' {
     interface Observable<T> {
-        sequenceEqual: typeof sequenceEqual;
+        sequenceEqual: SequenceEqualSignature<T>;
     }
 }

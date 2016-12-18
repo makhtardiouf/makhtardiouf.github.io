@@ -10,7 +10,6 @@ var Observable_1 = require('../Observable');
 var Subject_1 = require('../Subject');
 var Map_1 = require('../util/Map');
 var FastMap_1 = require('../util/FastMap');
-/* tslint:disable:max-line-length */
 /**
  * Groups the items emitted by an Observable according to a specified criterion,
  * and emits these grouped items as `GroupedObservables`, one
@@ -32,19 +31,19 @@ var FastMap_1 = require('../util/FastMap');
  * @method groupBy
  * @owner Observable
  */
-function groupBy(keySelector, elementSelector, durationSelector, subjectSelector) {
-    return this.lift(new GroupByOperator(keySelector, elementSelector, durationSelector, subjectSelector));
+function groupBy(keySelector, elementSelector, durationSelector) {
+    return this.lift(new GroupByOperator(this, keySelector, elementSelector, durationSelector));
 }
 exports.groupBy = groupBy;
 var GroupByOperator = (function () {
-    function GroupByOperator(keySelector, elementSelector, durationSelector, subjectSelector) {
+    function GroupByOperator(source, keySelector, elementSelector, durationSelector) {
+        this.source = source;
         this.keySelector = keySelector;
         this.elementSelector = elementSelector;
         this.durationSelector = durationSelector;
-        this.subjectSelector = subjectSelector;
     }
     GroupByOperator.prototype.call = function (subscriber, source) {
-        return source._subscribe(new GroupBySubscriber(subscriber, this.keySelector, this.elementSelector, this.durationSelector, this.subjectSelector));
+        return source._subscribe(new GroupBySubscriber(subscriber, this.keySelector, this.elementSelector, this.durationSelector));
     };
     return GroupByOperator;
 }());
@@ -55,12 +54,11 @@ var GroupByOperator = (function () {
  */
 var GroupBySubscriber = (function (_super) {
     __extends(GroupBySubscriber, _super);
-    function GroupBySubscriber(destination, keySelector, elementSelector, durationSelector, subjectSelector) {
+    function GroupBySubscriber(destination, keySelector, elementSelector, durationSelector) {
         _super.call(this, destination);
         this.keySelector = keySelector;
         this.elementSelector = elementSelector;
         this.durationSelector = durationSelector;
-        this.subjectSelector = subjectSelector;
         this.groups = null;
         this.attemptedToUnsubscribe = false;
         this.count = 0;
@@ -95,8 +93,7 @@ var GroupBySubscriber = (function (_super) {
             element = value;
         }
         if (!group) {
-            group = this.subjectSelector ? this.subjectSelector() : new Subject_1.Subject();
-            groups.set(key, group);
+            groups.set(key, group = new Subject_1.Subject());
             var groupedObservable = new GroupedObservable(key, group, this);
             this.destination.next(groupedObservable);
             if (this.durationSelector) {

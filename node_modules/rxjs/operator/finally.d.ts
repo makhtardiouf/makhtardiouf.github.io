@@ -7,4 +7,7 @@ import { Observable } from '../Observable';
  * @method finally
  * @owner Observable
  */
-export declare function _finally<T>(this: Observable<T>, callback: () => void): Observable<T>;
+export declare function _finally<T>(callback: () => void): Observable<T>;
+export interface FinallySignature<T> {
+    (callback: () => void): Observable<T>;
+}

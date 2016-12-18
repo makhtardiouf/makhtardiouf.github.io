@@ -1,4 +1,15 @@
+let objectTypes = {
+  'boolean': false,
+  'function': true,
+  'object': true,
+  'number': false,
+  'string': false,
+  'undefined': false
+};
+
 declare let global: NodeJS.Global;
+declare let module: any;
+declare let exports: any;
 
 declare module NodeJS {
   interface Global {
@@ -7,17 +18,9 @@ declare module NodeJS {
   }
 }
 
-/**
- * window: browser in DOM main thread
- * self: browser in WebWorker
- * global: Node.js/other
- */
-export const root: any = (
-     typeof window == 'object' && window.window === window && window
-  || typeof self == 'object' && self.self === self && self
-  || typeof global == 'object' && global.global === global && global
-);
+export let root: any = (objectTypes[typeof self] && self) || (objectTypes[typeof window] && window);
 
-if (!root) {
-  throw new Error('RxJS could not find any global context (window, self, global)');
+let freeGlobal = objectTypes[typeof global] && global;
+if (freeGlobal && (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal)) {
+  root = freeGlobal;
 }

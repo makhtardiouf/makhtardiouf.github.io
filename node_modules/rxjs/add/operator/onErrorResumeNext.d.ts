@@ -1,6 +1,6 @@
-import { onErrorResumeNext } from '../../operator/onErrorResumeNext';
+import { OnErrorResumeNextSignature } from '../../operator/onErrorResumeNext';
 declare module '../../Observable' {
     interface Observable<T> {
-        onErrorResumeNext: typeof onErrorResumeNext;
+        onErrorResumeNext: OnErrorResumeNextSignature<T>;
     }
 }

@@ -78,14 +78,6 @@ export class WebSocketSubject<T> extends AnonymousSubject<T> {
     return sock;
   }
 
-  private _resetState() {
-    this.socket = null;
-    if (!this.source) {
-      this.destination = new ReplaySubject();
-    }
-    this._output = new Subject<T>();
-  }
-
   // TODO: factor this out to be a proper Operator/Subscriber implementation and eliminate closures
   multiplex(subMsg: () => any, unsubMsg: () => any, messageFilter: (value: T) => boolean) {
     const self = this;
@@ -163,7 +155,8 @@ export class WebSocketSubject<T> extends AnonymousSubject<T> {
             observer.error(new TypeError('WebSocketSubject.error must be called with an object with an error code, ' +
               'and an optional reason: { code: number, reason: string }'));
           }
-          this._resetState();
+          this.destination = new ReplaySubject();
+          this.socket = null;
         },
         ( ) => {
           const closingObserver = this.closingObserver;
@@ -171,7 +164,8 @@ export class WebSocketSubject<T> extends AnonymousSubject<T> {
             closingObserver.next(undefined);
           }
           socket.close();
-          this._resetState();
+          this.destination = new ReplaySubject();
+          this.socket = null;
         }
       );
 
@@ -180,13 +174,9 @@ export class WebSocketSubject<T> extends AnonymousSubject<T> {
       }
     };
 
-    socket.onerror = (e: Event) => {
-      this._resetState();
-      observer.error(e);
-    };
+    socket.onerror = (e: Event) => observer.error(e);
 
     socket.onclose = (e: CloseEvent) => {
-      this._resetState();
       const closeObserver = this.closeObserver;
       if (closeObserver) {
         closeObserver.next(e);
@@ -220,11 +210,9 @@ export class WebSocketSubject<T> extends AnonymousSubject<T> {
     subscription.add(this._output.subscribe(subscriber));
     subscription.add(() => {
       const { socket } = this;
-      if (this._output.observers.length === 0) {
-        if (socket && socket.readyState === 1) {
-          socket.close();
-        }
-        this._resetState();
+      if (this._output.observers.length === 0 && socket && socket.readyState === 1) {
+        socket.close();
+        this.socket = null;
       }
     });
     return subscription;
@@ -234,7 +222,7 @@ export class WebSocketSubject<T> extends AnonymousSubject<T> {
     const { source, socket } = this;
     if (socket && socket.readyState === 1) {
       socket.close();
-      this._resetState();
+      this.socket = null;
     }
     super.unsubscribe();
     if (!source) {

@@ -6,7 +6,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var Subscriber_1 = require('../Subscriber');
 var EmptyError_1 = require('../util/EmptyError');
-/* tslint:disable:max-line-length */
 /**
  * Emits only the first value (or the first value that meets some condition)
  * emitted by the source Observable.
@@ -87,7 +86,6 @@ var FirstSubscriber = (function (_super) {
         this.source = source;
         this.index = 0;
         this.hasCompleted = false;
-        this._emitted = false;
     }
     FirstSubscriber.prototype._next = function (value) {
         var index = this.index++;
@@ -131,12 +129,9 @@ var FirstSubscriber = (function (_super) {
     };
     FirstSubscriber.prototype._emitFinal = function (value) {
         var destination = this.destination;
-        if (!this._emitted) {
-            this._emitted = true;
-            destination.next(value);
-            destination.complete();
-            this.hasCompleted = true;
-        }
+        destination.next(value);
+        destination.complete();
+        this.hasCompleted = true;
     };
     FirstSubscriber.prototype._complete = function () {
         var destination = this.destination;

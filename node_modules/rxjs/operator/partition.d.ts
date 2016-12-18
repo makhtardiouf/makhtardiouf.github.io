@@ -40,4 +40,7 @@ import { Observable } from '../Observable';
  * @method partition
  * @owner Observable
  */
-export declare function partition<T>(this: Observable<T>, predicate: (value: T) => boolean, thisArg?: any): [Observable<T>, Observable<T>];
+export declare function partition<T>(predicate: (value: T) => boolean, thisArg?: any): [Observable<T>, Observable<T>];
+export interface PartitionSignature<T> {
+    (predicate: (value: T) => boolean, thisArg?: any): [Observable<T>, Observable<T>];
+}

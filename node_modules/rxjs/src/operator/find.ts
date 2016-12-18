@@ -2,13 +2,6 @@ import { Observable } from '../Observable';
 import { Operator } from '../Operator';
 import { Subscriber } from '../Subscriber';
 
-/* tslint:disable:max-line-length */
-export function find<T, S extends T>(this: Observable<T>,
-                                     predicate: ((value: T, index: number, source: Observable<T>) => boolean) |
-                                                ((value: T, index: number, source: Observable<T>) => value is S),
-                                     thisArg?: any): Observable<S>;
-/* tslint:disable:max-line-length */
-
 /**
  * Emits only the first value emitted by the source Observable that meets some
  * condition.
@@ -42,12 +35,16 @@ export function find<T, S extends T>(this: Observable<T>,
  * @method find
  * @owner Observable
  */
-export function find<T>(this: Observable<T>, predicate: (value: T, index: number, source: Observable<T>) => boolean,
+export function find<T>(predicate: (value: T, index: number, source: Observable<T>) => boolean,
                         thisArg?: any): Observable<T> {
   if (typeof predicate !== 'function') {
     throw new TypeError('predicate is not a function');
   }
-  return <any>this.lift<any>(new FindValueOperator(predicate, this, false, thisArg));
+  return this.lift(new FindValueOperator(predicate, this, false, thisArg));
+}
+
+export interface FindSignature<T> {
+  (predicate: (value: T, index: number, source: Observable<T>) => boolean, thisArg?: any): Observable<T>;
 }
 
 export class FindValueOperator<T> implements Operator<T, T> {

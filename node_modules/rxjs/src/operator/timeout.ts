@@ -5,7 +5,6 @@ import { Subscriber } from '../Subscriber';
 import { Scheduler } from '../Scheduler';
 import { Observable } from '../Observable';
 import { TeardownLogic } from '../Subscription';
-import { TimeoutError } from '../util/TimeoutError';
 
 /**
  * @param due
@@ -15,13 +14,16 @@ import { TimeoutError } from '../util/TimeoutError';
  * @method timeout
  * @owner Observable
  */
-export function timeout<T>(this: Observable<T>, due: number | Date,
+export function timeout<T>(due: number | Date,
                            errorToSend: any = null,
                            scheduler: Scheduler = async): Observable<T> {
-  const absoluteTimeout = isDate(due);
-  const waitFor = absoluteTimeout ? (+due - scheduler.now()) : Math.abs(<number>due);
-  const error = errorToSend || new TimeoutError();
-  return this.lift(new TimeoutOperator(waitFor, absoluteTimeout, error, scheduler));
+  let absoluteTimeout = isDate(due);
+  let waitFor = absoluteTimeout ? (+due - scheduler.now()) : Math.abs(<number>due);
+  return this.lift(new TimeoutOperator(waitFor, absoluteTimeout, errorToSend, scheduler));
+}
+
+export interface TimeoutSignature<T> {
+  (due: number | Date, errorToSend?: any, scheduler?: Scheduler): Observable<T>;
 }
 
 class TimeoutOperator<T> implements Operator<T, T> {
@@ -78,7 +80,7 @@ class TimeoutSubscriber<T> extends Subscriber<T> {
     this._previousIndex = currentIndex;
   }
 
-  protected _next(value: T): void {
+  protected _next(value: T) {
     this.destination.next(value);
 
     if (!this.absoluteTimeout) {
@@ -86,17 +88,17 @@ class TimeoutSubscriber<T> extends Subscriber<T> {
     }
   }
 
-  protected _error(err: any): void {
+  protected _error(err: any) {
     this.destination.error(err);
     this._hasCompleted = true;
   }
 
-  protected _complete(): void {
+  protected _complete() {
     this.destination.complete();
     this._hasCompleted = true;
   }
 
-  notifyTimeout(): void {
-    this.error(this.errorToSend);
+  notifyTimeout() {
+    this.error(this.errorToSend || new Error('timeout'));
   }
 }

@@ -6,11 +6,6 @@ import { OuterSubscriber } from '../OuterSubscriber';
 import { InnerSubscriber } from '../InnerSubscriber';
 import { subscribeToResult } from '../util/subscribeToResult';
 
-/* tslint:disable:max-line-length */
-export function exhaustMap<T, R>(this: Observable<T>, project: (value: T, index: number) => ObservableInput<R>): Observable<R>;
-export function exhaustMap<T, I, R>(this: Observable<T>, project: (value: T, index: number) => ObservableInput<I>, resultSelector: (outerValue: T, innerValue: I, outerIndex: number, innerIndex: number) => R): Observable<R>;
-/* tslint:disable:max-line-length */
-
 /**
  * Projects each source value to an Observable which is merged in the output
  * Observable only if the previous projected Observable has completed.
@@ -56,9 +51,15 @@ export function exhaustMap<T, I, R>(this: Observable<T>, project: (value: T, ind
  * @method exhaustMap
  * @owner Observable
  */
-export function exhaustMap<T, I, R>(this: Observable<T>, project: (value: T, index: number) => ObservableInput<I>,
+export function exhaustMap<T, I, R>(project: (value: T, index: number) => ObservableInput<I>,
                                     resultSelector?: (outerValue: T, innerValue: I, outerIndex: number, innerIndex: number) => R): Observable<R> {
   return this.lift(new SwitchFirstMapOperator(project, resultSelector));
+}
+
+export interface SwitchFirstMapSignature<T> {
+  <R>(project: (value: T, index: number) => ObservableInput<R>): Observable<R>;
+  <I, R>(project: (value: T, index: number) => ObservableInput<I>,
+         resultSelector: (outerValue: T, innerValue: I, outerIndex: number, innerIndex: number) => R): Observable<R>;
 }
 
 class SwitchFirstMapOperator<T, I, R> implements Operator<T, R> {
